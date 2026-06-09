@@ -235,6 +235,13 @@ func (u *Unifi) refresh(first bool) error {
 		log.Infof("Querying the Unifi Controller")
 	}
 
+	// Establish (or re-establish) the controller session lazily. When the
+	// controller is unreachable this returns an error that the caller logs
+	// and retries on the next tick — it never blocks or aborts startup.
+	if err := u.Client.ensureAPI(); err != nil {
+		return err
+	}
+
 	u.mutex.Lock()
 	defer u.mutex.Unlock()
 
