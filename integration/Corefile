@@ -1,8 +1,8 @@
 . {
     unifi {
         controllerurl http://mock-controller:8443
-        username test
-        password test
+        username {$UNIFI_USERNAME}
+        password {$UNIFI_PASSWORD}
         ttl 30
         refreshinterval 5
     }

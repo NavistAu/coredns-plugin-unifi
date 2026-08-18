@@ -17,6 +17,9 @@ services:
     ports:
       - "1053:53/udp"
       - "1053:53/tcp"
+    environment:
+      UNIFI_USERNAME: test
+      UNIFI_PASSWORD: test
     volumes:
       - ./Corefile:/etc/coredns/Corefile:ro
     depends_on:

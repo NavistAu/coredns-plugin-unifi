@@ -42,7 +42,8 @@ sed -i '/^forward:forward/a unifi:github.com/navistau/coredns-plugin-unifi' plug
 # placed immediately above:
 #   forward:forward
 
-# 3. Build
+# 3. Fetch the plugin module and build
+go get github.com/navistau/coredns-plugin-unifi
 go generate && go build -o coredns .
 
 # 4. Verify the plugin is included
@@ -64,15 +65,9 @@ RUN git clone --depth 1 --branch v1.11.3 https://github.com/coredns/coredns.git 
 WORKDIR /coredns
 RUN sed -i '/^forward:forward/a unifi:github.com/navistau/coredns-plugin-unifi' plugin.cfg
 
-# Copy plugin module files first for dependency caching
-COPY go.mod go.sum /plugin/
-RUN go generate && \
-    go get github.com/navistau/coredns-plugin-unifi && \
-    go mod download
-
-# Now copy plugin source and build
-COPY *.go /plugin/
-RUN go mod tidy && go build -o coredns .
+RUN go get github.com/navistau/coredns-plugin-unifi && \
+    go generate && \
+    go build -o coredns .
 
 FROM alpine:3.20
 COPY --from=builder /coredns/coredns /usr/local/bin/coredns
@@ -103,6 +98,20 @@ unifi {
 - **ttl** — TTL (in seconds) for DNS responses. Default: `30`.
 - **sites** — Comma-separated list of UniFi site names to query. If omitted, all sites are queried.
 - **fallthrough** — If present, pass unresolved queries to the next plugin.
+
+### Credentials from environment variables
+
+CoreDNS substitutes `{$ENV_VAR}` tokens when it parses the Corefile, so credentials do not have to be written into the file:
+
+~~~ txt
+unifi {
+  controllerurl http://controller:port/
+  username {$UNIFI_USERNAME}
+  password {$UNIFI_PASSWORD}
+}
+~~~
+
+Set `UNIFI_USERNAME` and `UNIFI_PASSWORD` in the environment of the CoreDNS process (systemd `Environment=`, Docker `environment:`, or a Kubernetes secret mounted as env vars). The substitution is a CoreDNS core feature and works for every directive, not just these two. The integration harness in `integration/` uses this pattern.
 
 ## Metrics
 

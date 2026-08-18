@@ -71,6 +71,17 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	switch {
 	case loginPath.MatchString(path), loginPathNew.MatchString(path):
+		// Reject anything but the fixture credentials so the harness proves
+		// the Corefile's {$UNIFI_USERNAME}/{$UNIFI_PASSWORD} substitution.
+		var creds struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&creds); err != nil || creds.Username != "test" || creds.Password != "test" {
+			log.Printf("login rejected: username=%q", creds.Username)
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
 		jsonResponse(w, dataResponse{Data: nil})
 
 	case statusPath.MatchString(path):
