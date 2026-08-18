@@ -8,6 +8,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+- Release automation: merging to `main` fires a gate (semver `VERSION`, tag
+  absent, matching changelog section) → full-suite verify → tag + GitHub
+  release created inside the run → module-proxy warm. `workflow_dispatch`
+  with `force` re-releases an already-tagged version.
+
 ### Changed
 
 - Integration harness drives `docker compose` via `os/exec` instead of
