@@ -29,3 +29,6 @@ Thumbs.db
 
 # Vendor (if not committed)
 vendor/
+
+# Compiled mock controller (integration harness)
+integration/mock-controller/mock-controller

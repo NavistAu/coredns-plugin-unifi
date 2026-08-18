@@ -1,0 +1,29 @@
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: weekly
+    target-branch: develop
+    labels: ["dependencies"]
+    commit-message:
+      prefix: "deps"
+
+  # The integration mock controller is its own module.
+  - package-ecosystem: gomod
+    directory: "/integration/mock-controller"
+    schedule:
+      interval: weekly
+    target-branch: develop
+    labels: ["dependencies"]
+    commit-message:
+      prefix: "deps"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    target-branch: develop
+    labels: ["dependencies", "ci"]
+    commit-message:
+      prefix: "ci"

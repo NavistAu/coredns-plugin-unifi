@@ -1,0 +1,49 @@
+name: Feature request
+description: Propose a change to what the plugin does.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This plugin is deliberately small. It fetches DHCP clients and
+        networks from a UniFi controller and serves matching A and PTR
+        records, and it tries to do nothing else. Proposals that add
+        configuration surface need a clear reason why the problem cannot
+        be solved with CoreDNS's own plugins or the controller's settings.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What can you not do today? Describe the deployment, not the fix.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behaviour
+      description: >-
+        What should the plugin do instead? If this adds configuration, show
+        the Corefile block you would want to write.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you tried instead
+      description: >-
+        Which CoreDNS-native options did you rule out, and why did they not
+        work? The hosts plugin, rewrite, a second server block, controller
+        settings.
+    validations:
+      required: true
+
+  - type: textarea
+    id: blast-radius
+    attributes:
+      label: Effect on existing deployments
+      description: >-
+        Does an existing Corefile keep working unchanged? Does this change
+        which queries the plugin answers? Say so plainly.

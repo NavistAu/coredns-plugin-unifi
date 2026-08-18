@@ -1,0 +1,88 @@
+name: Bug report
+description: A client does not resolve, resolves wrongly, or the plugin misbehaves.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before you file: check the CoreDNS logs for lines that start with
+        `plugin/unifi`. The plugin reports controller errors, skipped
+        clients, and hostname collisions there, and that line is usually
+        the answer.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you expect, and what did you get instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Corefile block
+      description: >-
+        The server block containing the `unifi` directive. Remove the
+        password and replace real host names if you must, but keep the
+        structure intact.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log lines
+      description: >-
+        Every `plugin/unifi` line from CoreDNS, plus any CoreDNS error
+        around startup.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: dig
+    attributes:
+      label: dig output (optional but usually decisive)
+      description: >-
+        Output of `dig @<coredns> <name>` for the affected record. For PTR
+        problems, `dig @<coredns> -x <ip>`.
+      render: text
+
+  - type: input
+    id: coredns-version
+    attributes:
+      label: CoreDNS version
+      placeholder: "v1.11.3"
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: The tag, or the commit if you build from a branch.
+      placeholder: "v0.4.0"
+    validations:
+      required: true
+
+  - type: input
+    id: controller-version
+    attributes:
+      label: UniFi Network version
+      placeholder: "8.4.62"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: CoreDNS can reach the controller URL, and the credentials log in.
+          required: true
+        - label: The query name falls inside a zone the server block declares.
+          required: true
+        - label: I searched the existing issues.
+          required: true
