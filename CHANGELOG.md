@@ -8,6 +8,18 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Changed
+
+- Dependencies updated: CoreDNS 1.11.3 → 1.14.6 (library and the version the
+  integration suite builds against), coredns/caddy 1.1.4, miekg/dns 1.1.72,
+  testcontainers-go 0.44.0, x/net in the mock controller. Resolves the
+  outstanding Dependabot security alerts.
+- Toolchain: Go 1.24.9 → 1.25.9 (CoreDNS 1.14.6 requires it); Docker builds
+  use `golang:1.25-alpine`.
+- CI: actions/checkout v7, actions/setup-go v7, golangci-lint-action v9;
+  `.golangci.yml` migrated to the v2 config format; workflows now also run on
+  pushes to `develop`.
+
 ## [0.4.0] - 2026-08-19
 
 ### Changed

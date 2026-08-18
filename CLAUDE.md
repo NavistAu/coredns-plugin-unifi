@@ -30,7 +30,7 @@ Linting:
 golangci-lint run ./...
 ```
 
-Go version: 1.24.9 (see `mise.toml`)
+Go version: 1.25.9 (see `mise.toml`)
 
 ## Architecture
 

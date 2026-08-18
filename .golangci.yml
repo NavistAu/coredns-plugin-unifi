@@ -1,12 +1,9 @@
-linters:
-  enable:
-    - govet
-    - errcheck
-    - staticcheck
-    - unused
-    - gosimple
-    - ineffassign
+version: "2"
 
-issues:
-  exclude-dirs:
-    - integration
+# The v2 standard default set is errcheck, govet, ineffassign, staticcheck
+# (which absorbed gosimple), and unused — the same list the v1 config
+# enabled explicitly.
+linters:
+  exclusions:
+    paths:
+      - integration
