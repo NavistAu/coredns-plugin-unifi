@@ -10,10 +10,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Changed
 
+- Integration harness drives `docker compose` via `os/exec` instead of
+  testcontainers-go, removing the docker/containerd/buildkit dependency tree
+  (and its unfixable `docker/docker` v28 security alerts — the fixed v29 line
+  lives at the renamed `moby/moby/v2` module path that Docker's own compose
+  and buildx libraries do not yet consume).
+
 - Dependencies updated: CoreDNS 1.11.3 → 1.14.6 (library and the version the
   integration suite builds against), coredns/caddy 1.1.4, miekg/dns 1.1.72,
-  testcontainers-go 0.44.0, x/net in the mock controller. Resolves the
-  outstanding Dependabot security alerts.
+  x/net in the mock controller. Resolves the outstanding Dependabot security
+  alerts.
 - Toolchain: Go 1.24.9 → 1.25.9 (CoreDNS 1.14.6 requires it); Docker builds
   use `golang:1.25-alpine`.
 - CI: actions/checkout v7, actions/setup-go v7, golangci-lint-action v9;

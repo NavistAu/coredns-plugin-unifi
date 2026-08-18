@@ -42,7 +42,7 @@ The plugin follows the standard CoreDNS plugin pattern:
 - **ready.go** — Implements CoreDNS readiness interface (currently always returns true).
 - **metrics.go** — Prometheus counter `coredns_unifi_request_count_total` for query tracking.
 - **mock_test.go** — `mockUnifiAPI` implementing `UnifiAPI` interface for unit tests.
-- **integration_test.go** — Testcontainers-go integration tests (build tag: `integration`).
+- **integration_test.go** — Integration tests driving `docker compose` via `os/exec` (build tag: `integration`).
 - **integration/** — Docker compose, Dockerfiles, mock controller, Corefile for integration tests.
 
 ## Corefile Configuration
@@ -61,7 +61,7 @@ unifi {
 
 ## Integration Test Architecture
 
-- `integration_test.go` uses testcontainers-go compose module; `TestMain` starts the compose stack, gets the mapped DNS port, waits for initial refresh, runs tests, tears down.
+- `integration_test.go` shells out to `docker compose` (no Go dependency on the Docker stack); `TestMain` runs `up -d --build --wait` (both services have healthchecks; CoreDNS's uses the `health` plugin), reads the mapped DNS port via `compose port`, waits for initial refresh, runs tests, tears down.
 - Queries use the `miekg/dns` client for assertions.
 - Mock controller (`integration/mock-controller/`) has its own `go.mod` and imports unpoller/unifi types (`Client`, `Network`, `Site`, `ServerStatus`) + API path constants to return deterministic data for 5 clients across 2 networks.
 - Dockerfiles copy `go.mod`/`go.sum` and run `go mod download` before source — only the final build step re-runs on code changes. Base: `golang:1.24-alpine`.

@@ -6,6 +6,7 @@
         ttl 30
         refreshinterval 5
     }
+    health
     log
     errors
 }
