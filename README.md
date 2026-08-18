@@ -35,10 +35,10 @@ git clone --depth 1 --branch v1.11.3 https://github.com/coredns/coredns.git
 cd coredns
 
 # 2. Add the plugin — insert above the forward: line
-sed -i '/^forward:forward/a unifi:github.com/jhogendorn/coredns-plugin-unifi' plugin.cfg
+sed -i '/^forward:forward/a unifi:github.com/navistau/coredns-plugin-unifi' plugin.cfg
 
 # Or edit plugin.cfg manually; the entry should read:
-#   unifi:github.com/jhogendorn/coredns-plugin-unifi
+#   unifi:github.com/navistau/coredns-plugin-unifi
 # placed immediately above:
 #   forward:forward
 
@@ -62,12 +62,12 @@ RUN apk add --no-cache git
 # Clone CoreDNS and inject plugin — these layers are stable
 RUN git clone --depth 1 --branch v1.11.3 https://github.com/coredns/coredns.git /coredns
 WORKDIR /coredns
-RUN sed -i '/^forward:forward/a unifi:github.com/jhogendorn/coredns-plugin-unifi' plugin.cfg
+RUN sed -i '/^forward:forward/a unifi:github.com/navistau/coredns-plugin-unifi' plugin.cfg
 
 # Copy plugin module files first for dependency caching
 COPY go.mod go.sum /plugin/
 RUN go generate && \
-    go get github.com/jhogendorn/coredns-plugin-unifi && \
+    go get github.com/navistau/coredns-plugin-unifi && \
     go mod download
 
 # Now copy plugin source and build
@@ -80,7 +80,7 @@ EXPOSE 53 53/udp
 CMD ["coredns", "-conf", "/etc/coredns/Corefile"]
 ```
 
-> **Note:** This Dockerfile pulls the plugin from the module proxy (`github.com/jhogendorn/coredns-plugin-unifi`). For local development builds, see the integration harness in the `integration/` directory.
+> **Note:** This Dockerfile pulls the plugin from the module proxy (`github.com/navistau/coredns-plugin-unifi`). For local development builds, see the integration harness in the `integration/` directory.
 
 ## Syntax
 
