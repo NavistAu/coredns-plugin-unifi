@@ -6,7 +6,7 @@ Corefile directive behaviour is called out regardless of size.
 The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.0] - 2026-09-09
 
 ### Added
 
@@ -32,6 +32,18 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - CI: actions/checkout v7, actions/setup-go v7, golangci-lint-action v9;
   `.golangci.yml` migrated to the v2 config format; workflows now also run on
   pushes to `develop`.
+
+### Fixed
+
+- The plugin now re-authenticates after a controller error, instead of
+  retrying forever against an expired session. The underlying unpoller client
+  logs in once, in `NewUnifi`, and has no 401 branch — so once the controller
+  expired the session cookie, every later refresh returned `invalid status
+  code from server` and the plugin served frozen records until CoreDNS was
+  restarted. Observed against UniFi Network 10.6.101: the session lasted about
+  ten hours, then produced one 401 per `refreshinterval` — 2880 a day — for
+  eleven days. Any controller error now drops the session so the next refresh
+  logs in again.
 
 ## [0.4.0] - 2026-08-19
 
