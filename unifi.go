@@ -245,8 +245,15 @@ func (u *Unifi) refresh(first bool) error {
 	u.mutex.Lock()
 	defer u.mutex.Unlock()
 
+	// Any controller error drops the session, so the next tick re-authenticates
+	// rather than retrying forever against a cookie the controller has already
+	// expired. See UnifiClient.invalidateAPI for why the underlying client
+	// cannot recover on its own. Re-login costs one request per refreshinterval
+	// while the controller is unreachable, which is the same shape as the retry
+	// that was happening anyway.
 	sites, err := u.Client.api.GetSites()
 	if err != nil {
+		u.Client.invalidateAPI()
 		return err
 	}
 
@@ -265,11 +272,13 @@ func (u *Unifi) refresh(first bool) error {
 
 	clients, err := u.Client.api.GetClients(sites)
 	if err != nil {
+		u.Client.invalidateAPI()
 		return err
 	}
 
 	networks, err := u.Client.api.GetNetworks(sites)
 	if err != nil {
+		u.Client.invalidateAPI()
 		return err
 	}
 

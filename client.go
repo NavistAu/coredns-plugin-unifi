@@ -16,6 +16,10 @@ type UnifiClient struct {
 	controllerUrl string
 	config        *UnifiConfig
 	api           UnifiAPI
+	// owned records that ensureAPI built this session, so invalidateAPI may
+	// discard it. An api injected by a test is never owned and is never
+	// discarded — the test supplied it and expects it to stay.
+	owned bool
 }
 
 // NewUnifiClient builds the client WITHOUT contacting the controller.
@@ -56,5 +60,30 @@ func (c *UnifiClient) ensureAPI() error {
 		return err
 	}
 	c.api = client
+	c.owned = true
 	return nil
+}
+
+// invalidateAPI drops the cached session so the next ensureAPI logs in again.
+//
+// The unpoller client authenticates once, in NewUnifi, and never re-logs in:
+// its do() turns every non-200 into a bare "invalid status code from server"
+// with no 401 branch. So when the controller expires the session cookie, the
+// client is poisoned for the life of the process — ensureAPI short-circuits on
+// a non-nil c.api, and every subsequent refresh 401s against a dead session.
+//
+// Observed on a live controller (UniFi Network 10.6.101): the session lasted
+// roughly ten hours, then produced 2880 identical 401s a day — one per
+// refreshinterval — for eleven days, until CoreDNS was restarted. The records
+// the plugin already held stayed frozen at their last good refresh the whole
+// time, so the failure is silent to anything but the log.
+//
+// Called only from the single refresh goroutine, same as ensureAPI, so c.api
+// needs no locking.
+func (c *UnifiClient) invalidateAPI() {
+	if !c.owned {
+		return
+	}
+	c.api = nil
+	c.owned = false
 }
