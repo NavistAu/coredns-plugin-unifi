@@ -511,6 +511,58 @@ func TestRefreshNetworksError(t *testing.T) {
 	}
 }
 
+// A controller error must drop the session ensureAPI built, because the
+// unpoller client never re-logs in by itself: once the controller expires the
+// session cookie, every later call 401s against the dead session forever. See
+// UnifiClient.invalidateAPI.
+func TestRefreshDropsOwnedSessionOnControllerError(t *testing.T) {
+	cases := map[string]*mockUnifiAPI{
+		"sites": {
+			sitesErr: fmt.Errorf("https://c/api/stat/sites: 401 Unauthorized: invalid status code from server"),
+		},
+		"clients": {
+			sites:      []*unpoller_unifi.Site{{Name: "default"}},
+			clientsErr: fmt.Errorf("401 Unauthorized"),
+		},
+		"networks": {
+			sites:       []*unpoller_unifi.Site{{Name: "default"}},
+			clients:     []*unpoller_unifi.Client{},
+			networksErr: fmt.Errorf("401 Unauthorized"),
+		},
+	}
+
+	for name, mock := range cases {
+		t.Run(name, func(t *testing.T) {
+			u := newTestUnifi(mock)
+			u.Client.owned = true
+
+			if err := u.refresh(true); err == nil {
+				t.Fatal("expected an error from refresh")
+			}
+			if u.Client.api != nil {
+				t.Fatal("owned session must be dropped so the next refresh re-authenticates")
+			}
+			if u.Client.owned {
+				t.Fatal("owned must be cleared alongside the session")
+			}
+		})
+	}
+}
+
+// An api the test injected is not ours to discard: newTestUnifi supplies it
+// directly and every other test expects it to survive an error path.
+func TestRefreshKeepsInjectedSessionOnControllerError(t *testing.T) {
+	mock := &mockUnifiAPI{sitesErr: fmt.Errorf("connection refused")}
+
+	u := newTestUnifi(mock)
+	if err := u.refresh(true); err == nil {
+		t.Fatal("expected an error from refresh")
+	}
+	if u.Client.api != UnifiAPI(mock) {
+		t.Fatal("an injected api must survive an error path")
+	}
+}
+
 func TestRefreshFallsBackToHostname(t *testing.T) {
 	mock := &mockUnifiAPI{
 		sites: []*unpoller_unifi.Site{{Name: "default"}},

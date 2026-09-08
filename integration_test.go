@@ -3,60 +3,60 @@
 package unifi
 
 import (
-	"context"
 	"fmt"
 	"os"
+	"os/exec"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/miekg/dns"
-	tc "github.com/testcontainers/testcontainers-go/modules/compose"
-	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 var dnsAddr string
 
+// compose returns a docker compose command against the integration stack.
+// Stdout is left unset so callers can capture it; run() wires both streams
+// to stderr for commands whose output is progress, not data.
+func compose(args ...string) *exec.Cmd {
+	cmd := exec.Command("docker", append([]string{"compose", "-f", "integration/docker-compose.yml"}, args...)...)
+	cmd.Stderr = os.Stderr
+	return cmd
+}
+
+func composeRun(args ...string) error {
+	cmd := compose(args...)
+	cmd.Stdout = os.Stderr
+	return cmd.Run()
+}
+
 func TestMain(m *testing.M) {
-	ctx := context.Background()
+	teardown := func() { _ = composeRun("down", "-v", "--remove-orphans") }
 
-	stack, err := tc.NewDockerCompose("integration/docker-compose.yml")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to create compose stack: %v\n", err)
-		os.Exit(1)
-	}
-
-	err = stack.
-		WaitForService("mock-controller", wait.ForHTTP("/status").WithPort("8443/tcp").WithStartupTimeout(30*time.Second)).
-		WaitForService("coredns", wait.ForListeningPort("53/udp").WithStartupTimeout(30*time.Second)).
-		Up(ctx, tc.Wait(true))
-	if err != nil {
+	// --wait blocks until every service reports healthy; both services
+	// declare healthchecks, and coredns's covers the CoreDNS health plugin.
+	if err := composeRun("up", "-d", "--build", "--wait"); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to start compose stack: %v\n", err)
-		_ = stack.Down(ctx, tc.RemoveOrphans(true))
+		teardown()
 		os.Exit(1)
 	}
 
-	ctr, err := stack.ServiceContainer(ctx, "coredns")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to get coredns container: %v\n", err)
-		_ = stack.Down(ctx, tc.RemoveOrphans(true))
-		os.Exit(1)
-	}
-
-	port, err := ctr.MappedPort(ctx, "53/udp")
+	out, err := compose("port", "--protocol", "udp", "coredns", "53").Output()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to get mapped port: %v\n", err)
-		_ = stack.Down(ctx, tc.RemoveOrphans(true))
+		teardown()
 		os.Exit(1)
 	}
-
-	dnsAddr = fmt.Sprintf("127.0.0.1:%s", port.Port())
+	hostPort := strings.TrimSpace(string(out))
+	port := hostPort[strings.LastIndex(hostPort, ":")+1:]
+	dnsAddr = "127.0.0.1:" + port
 
 	// Wait for CoreDNS to do its first refresh from the mock controller
 	time.Sleep(6 * time.Second)
 
 	code := m.Run()
 
-	_ = stack.Down(ctx, tc.RemoveOrphans(true))
+	teardown()
 	os.Exit(code)
 }
 

@@ -22,6 +22,11 @@ services:
       UNIFI_PASSWORD: test
     volumes:
       - ./Corefile:/etc/coredns/Corefile:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
     depends_on:
       mock-controller:
         condition: service_healthy

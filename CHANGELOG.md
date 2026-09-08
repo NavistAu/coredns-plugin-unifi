@@ -6,7 +6,44 @@ Corefile directive behaviour is called out regardless of size.
 The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.0] - 2026-09-09
+
+### Added
+
+- Release automation: merging to `main` fires a gate (semver `VERSION`, tag
+  absent, matching changelog section) → full-suite verify → tag + GitHub
+  release created inside the run → module-proxy warm. `workflow_dispatch`
+  with `force` re-releases an already-tagged version.
+
+### Changed
+
+- Integration harness drives `docker compose` via `os/exec` instead of
+  testcontainers-go, removing the docker/containerd/buildkit dependency tree
+  (and its unfixable `docker/docker` v28 security alerts — the fixed v29 line
+  lives at the renamed `moby/moby/v2` module path that Docker's own compose
+  and buildx libraries do not yet consume).
+
+- Dependencies updated: CoreDNS 1.11.3 → 1.14.6 (library and the version the
+  integration suite builds against), coredns/caddy 1.1.4, miekg/dns 1.1.72,
+  x/net in the mock controller. Resolves the outstanding Dependabot security
+  alerts.
+- Toolchain: Go 1.24.9 → 1.25.9 (CoreDNS 1.14.6 requires it); Docker builds
+  use `golang:1.25-alpine`.
+- CI: actions/checkout v7, actions/setup-go v7, golangci-lint-action v9;
+  `.golangci.yml` migrated to the v2 config format; workflows now also run on
+  pushes to `develop`.
+
+### Fixed
+
+- The plugin now re-authenticates after a controller error, instead of
+  retrying forever against an expired session. The underlying unpoller client
+  logs in once, in `NewUnifi`, and has no 401 branch — so once the controller
+  expired the session cookie, every later refresh returned `invalid status
+  code from server` and the plugin served frozen records until CoreDNS was
+  restarted. Observed against UniFi Network 10.6.101: the session lasted about
+  ten hours, then produced one 401 per `refreshinterval` — 2880 a day — for
+  eleven days. Any controller error now drops the session so the next refresh
+  logs in again.
 
 ## [0.4.0] - 2026-08-19
 
