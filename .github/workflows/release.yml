@@ -94,7 +94,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           # Triggered by a push to main rather than a tag, so name the tag
           # explicitly; the action creates it on this commit.
