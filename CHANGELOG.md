@@ -6,6 +6,17 @@ Corefile directive behaviour is called out regardless of size.
 The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.5.1] - 2026-11-15
+
+### Security
+
+- Dependencies updated to clear open Dependabot alerts: CoreDNS 1.14.6 →
+  1.14.7 (library and the version the integration suite and README build
+  against) and google.golang.org/grpc 1.82.1 → 1.83.1. No Corefile directive
+  behaviour changes.
+
 ## [0.5.0] - 2026-09-09
 
 ### Added
