@@ -31,7 +31,7 @@ This plugin is compiled into CoreDNS — it is not a standalone binary.
 
 ```sh
 # 1. Clone CoreDNS
-git clone --depth 1 --branch v1.14.6 https://github.com/coredns/coredns.git
+git clone --depth 1 --branch v1.14.7 https://github.com/coredns/coredns.git
 cd coredns
 
 # 2. Add the plugin — insert above the forward: line
@@ -61,7 +61,7 @@ FROM golang:1.25-alpine AS builder
 RUN apk add --no-cache git
 
 # Clone CoreDNS and inject plugin — these layers are stable
-RUN git clone --depth 1 --branch v1.14.6 https://github.com/coredns/coredns.git /coredns
+RUN git clone --depth 1 --branch v1.14.7 https://github.com/coredns/coredns.git /coredns
 WORKDIR /coredns
 RUN sed -i '/^forward:forward/a unifi:github.com/navistau/coredns-plugin-unifi' plugin.cfg
 
