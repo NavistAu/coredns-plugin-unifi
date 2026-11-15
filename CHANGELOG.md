@@ -8,6 +8,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-11-15
+
+### Security
+
+- google.golang.org/grpc 1.83.1 → 1.83.2 (xDS server DoS fix). No Corefile
+  directive behaviour changes.
+
 ## [0.5.1] - 2026-11-15
 
 ### Security
